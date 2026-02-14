@@ -11,8 +11,9 @@ const AWS_CONFIG = {
 // PROBLEM 5: Reflected XSS
 app.get('/hello', (req, res) => {
     const name = req.query.name;
-    // Unsafe response allows scripts injection
-    res.send(`<h1>Hello ${name}</h1>`);
+    // Sanitize user input to prevent XSS
+    const sanitizedName = req.query.name.replace(/<|>|&|\\/g, '');
+    res.send(`<h1>Hello ${sanitizedName}</h1>`);
 });
 
 app.listen(3000, () => console.log('Vulnerable app listening on port 3000'));
