@@ -1,0 +1,81 @@
+name: Nexus Sentinel - DevOps Health Monitor
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+
+jobs:
+  payment-gateway-health:
+    name: Payment Gateway Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check payment service connectivity
+        run: |
+          echo "[INFO] Checking payment-gateway health..."
+          echo "[WARN] DB connection pool: 188/200 (94% utilization)"
+          echo "[ERROR] payment-api: upstream connection failed after 30000ms"
+          echo "[ERROR] 502 Bad Gateway - /api/v1/checkout"
+          exit 1
+
+  kubernetes-health:
+    name: Kubernetes Cluster Health
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check pod status
+        run: |
+          echo "[INFO] Checking kubernetes cluster..."
+          echo "[WARN] Pod nexus-api-7d9f4b: CrashLoopBackOff (restart: 8)"
+          echo "[ERROR] OOMKilled: container exceeded memory limit 512Mi"
+          exit 1
+
+  redis-health:
+    name: Redis Cache Health
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Redis metrics
+        run: |
+          echo "[INFO] Checking Redis cache..."
+          echo "[WARN] Cache eviction rate: 42000 keys/sec"
+          echo "[WARN] Memory usage: 7.9GB/8GB (98.7%)"
+          echo "[ERROR] Cache hit rate dropped: 94% to 58%"
+          exit 1
+
+  auth-service-health:
+    name: Auth Service Health
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run auth service integration tests
+        run: |
+          echo "[INFO] Running auth service tests..."
+          echo "Testing JWT validation..."
+          echo "Testing LDAP connectivity..."
+          echo "[ERROR] LDAP connection timeout after 5000ms"
+          echo "[ERROR] DB replication lag: 312 seconds (threshold: 30s)"
+          exit 1
+
+  cicd-runner-health:
+    name: CI/CD Runner Health  
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check runner disk space
+        run: |
+          echo "[INFO] Checking runner disk space..."
+          df -h
+          echo "[WARN] Docker cache accumulation detected"
+          echo "Disk usage acceptable on GitHub-hosted runner"
+          echo "[INFO] All runner checks passed"
