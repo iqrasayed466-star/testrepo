@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const { URL } = require('url');
 
 // PROBLEM 4: Hardcoded AWS Keys
 const AWS_CONFIG = {
@@ -11,8 +12,9 @@ const AWS_CONFIG = {
 // PROBLEM 5: Reflected XSS
 app.get('/hello', (req, res) => {
     const name = req.query.name;
-    // Unsafe response allows scripts injection
-    res.send(`<h1>Hello ${name}</h1>`);
+    // Sanitize the input to prevent XSS
+    const sanitizedName = (name === undefined) ? '' : String(name).replace(/<|>|&|\'|\"/g, '');
+    res.send(`<h1>Hello ${sanitizedName}</h1>`);
 });
 
 app.listen(3000, () => console.log('Vulnerable app listening on port 3000'));
